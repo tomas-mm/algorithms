@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 
 def merge_sort_and_count_inversions(int_list):
@@ -59,6 +59,24 @@ def main(int_list):
     print 'Number of inversions: %s' % count
 
 
+def get_int_list_from_args():
+    parser = argparse.ArgumentParser(description = 'Count inversions in an integer array.')
+
+    group = parser.add_mutually_exclusive_group(required = True)
+    group.add_argument('--integers', '-i', help = 'comma-separated list of integers')
+    group.add_argument('--file', '-f', help = 'file with a list of integers (one per line)')
+
+    args = parser.parse_args()
+
+    if args.integers:
+        int_list = [int(i) for i in args.integers.split(',')]
+    else:
+        with open(args.file) as f:
+            int_list = [int(i) for i in f.readlines()]
+
+    return int_list
+
+
 if __name__ == '__main__':
-    int_list = [int(i) for i in sys.argv[1:]]
+    int_list = get_int_list_from_args()
     main(int_list)
