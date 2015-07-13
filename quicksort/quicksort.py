@@ -7,14 +7,15 @@ def choose_pivot(int_list, sort_range):
     Fixed pivot choosing
     """
     pos = sort_range[0]
-    return int_list[pos], pos
+    return pos
 
 
-def partition(int_list, sort_range, pivot, pos):
+def partition_not_in_place(int_list, sort_range, pos):
     """
-    NOT minimal memory implementation
+    NOT minimal memory implementation (not in-place)
     modifies int_list and returns the new position of the pivot
     """
+    pivot = int_list[pos]
     prev = []
     post = []
     middle = []
@@ -28,12 +29,44 @@ def partition(int_list, sort_range, pivot, pos):
             middle.append(a)
 
     res = prev + middle + post
-    new_pos = len(prev) + 1
+    new_pos = len(prev) + sort_range[0]
 
     # partially rewrite int_list
     int_list[sort_range[0]:sort_range[1]] = res
 
     return new_pos
+
+
+def swap_pos(int_list, i, j):
+    t = int_list[i]
+    int_list[i] = int_list[j]
+    int_list[j] = t
+
+
+def partition(int_list, sort_range, pos):
+    """
+    In-place implementation
+    modifies int_list and returns the new position of the pivot
+    """
+    pivot = int_list[pos]
+    # preprocessing step
+    if pos != sort_range[0]:
+        swap_pos(int_list, sort_range[0], pos)
+
+    unpart_pointer = sort_range[0] + 1
+    greater_than_pivot_pointer = unpart_pointer
+
+    for i in range(unpart_pointer, sort_range[1]):
+        if int_list[i] < pivot:
+            if greater_than_pivot_pointer < i:
+                # elements bigger than the pivot have been seen
+                swap_pos(int_list, i, greater_than_pivot_pointer)
+            greater_than_pivot_pointer += 1
+
+    if sort_range[0] != greater_than_pivot_pointer - 1:
+        swap_pos(int_list, sort_range[0], greater_than_pivot_pointer - 1)
+
+    return greater_than_pivot_pointer
 
 
 def quick_sort(int_list, sort_range=None):
@@ -44,9 +77,10 @@ def quick_sort(int_list, sort_range=None):
         return
 
     else:
-        piv, p = choose_pivot(int_list, sort_range)
+        piv_pos = choose_pivot(int_list, sort_range)
 
-        new_pos = partition(int_list, sort_range, piv, p)
+        new_pos = partition(int_list, sort_range, piv_pos)
+        # new_pos = partition_not_in_place(int_list, sort_range, piv_pos)
 
         quick_sort(int_list, sort_range=(sort_range[0], new_pos))
         quick_sort(int_list, sort_range=(new_pos + 1, sort_range[1]))
