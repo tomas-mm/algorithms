@@ -60,11 +60,11 @@ def main(int_list):
 
 
 def get_int_list_from_args():
-    parser = argparse.ArgumentParser(description = 'Count inversions in an integer array.')
+    parser = argparse.ArgumentParser(description='Count inversions in an integer array.')
 
-    group = parser.add_mutually_exclusive_group(required = True)
-    group.add_argument('--integers', '-i', help = 'comma-separated list of integers')
-    group.add_argument('--file', '-f', help = 'file with a list of integers (one per line)')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--integers', '-i', help='comma-separated list of integers')
+    group.add_argument('--file', '-f', help='file with a list of integers (one per line)')
 
     args = parser.parse_args()
 
