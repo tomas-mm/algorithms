@@ -1,12 +1,21 @@
 import copy
+import random
 import argparse
 
 
-def choose_pivot(int_list, sort_range):
+def choose_pivot_fixed(int_list, sort_range):
     """
     Fixed pivot choosing
     """
     pos = sort_range[0]
+    return pos
+
+
+def choose_pivot(int_list, sort_range):
+    """
+    Ramdomized pivot choosing
+    """
+    pos = random.randrange(*sort_range)
     return pos
 
 
@@ -63,10 +72,12 @@ def partition(int_list, sort_range, pos):
                 swap_pos(int_list, i, greater_than_pivot_pointer)
             greater_than_pivot_pointer += 1
 
-    if sort_range[0] != greater_than_pivot_pointer - 1:
+    new_pos = greater_than_pivot_pointer - 1
+
+    if sort_range[0] != new_pos:
         swap_pos(int_list, sort_range[0], greater_than_pivot_pointer - 1)
 
-    return greater_than_pivot_pointer
+    return new_pos
 
 
 def quick_sort(int_list, sort_range=None):
