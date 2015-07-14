@@ -3,17 +3,128 @@ import random
 import argparse
 
 
-def choose_pivot_fixed(int_list, sort_range):
+number_of_comparisons = 0
+
+
+def choose_pivot(int_list, sort_range):
     """
-    Fixed pivot choosing
+    Configure different pivot choice algorithms
+    """
+    # return choose_pivot_random(int_list, sort_range)
+    # return choose_pivot_first(int_list, sort_range)
+    # return choose_pivot_last(int_list, sort_range)
+    return choose_pivot_median_of_3(int_list, sort_range)
+    # return choose_pivot_median_of_3_isort(int_list, sort_range)
+    # return choose_pivot_median_of_3_bf(int_list, sort_range)
+
+
+def choose_pivot_first(int_list, sort_range):
+    """
+    Fixed pivot choice (first element)
     """
     pos = sort_range[0]
     return pos
 
 
-def choose_pivot(int_list, sort_range):
+def choose_pivot_last(int_list, sort_range):
     """
-    Ramdomized pivot choosing
+    Fixed pivot choice (last element)
+    """
+    pos = sort_range[1] - 1
+    return pos
+
+
+def choose_pivot_median_of_3_bf(int_list, sort_range):
+    """
+    "Median-of-three" pivot rule (brute force comparisons)
+    """
+    m = sort_range[1] - sort_range[0]
+    first_pos = sort_range[0]
+    last_pos = sort_range[1] - 1
+    mid_pos = first_pos + (m - 1) / 2
+
+    if (int_list[first_pos] <= int_list[mid_pos] <= int_list[last_pos]
+        or
+        int_list[last_pos] <= int_list[mid_pos] <= int_list[first_pos]):
+        p = mid_pos
+    elif (int_list[mid_pos] <= int_list[first_pos] <= int_list[last_pos]
+          or
+          int_list[last_pos] <= int_list[first_pos] <= int_list[mid_pos]):
+        p = first_pos
+    else:
+        p = last_pos
+
+    return p
+
+
+# several implementations of the median pivot choice
+
+def choose_pivot_median_of_3(int_list, sort_range):
+    """
+    "Median-of-three" pivot rule
+    """
+    m = sort_range[1] - sort_range[0]
+
+    first_pos = sort_range[0]
+    last_pos = sort_range[1] - 1
+    mid_pos = first_pos + (m - 1) / 2
+
+    # merge sort style
+    pos_list = [first_pos, mid_pos, last_pos]
+    if int_list[pos_list[0]] > int_list[pos_list[1]]:
+        pos_list = [pos_list[1], pos_list[0], pos_list[2]]
+    if int_list[pos_list[2]] >= int_list[pos_list[1]]:
+        p = pos_list[1]
+    elif int_list[pos_list[2]] <= int_list[pos_list[0]]:
+        p = pos_list[0]
+    else:
+        p = pos_list[2]
+
+    # debug
+    correct = [first_pos, mid_pos, last_pos]
+    correct.sort(key=lambda x: int_list[x])
+    if p != correct[1]:
+        print 'Alert!!'
+
+    return p
+
+
+def choose_pivot_median_of_3_isort(int_list, sort_range):
+    """
+    "Median-of-three" pivot rule
+    """
+    m = sort_range[1] - sort_range[0]
+    first_pos = sort_range[0]
+    last_pos = sort_range[1] - 1
+    mid_pos = first_pos + (m - 1) / 2
+
+    # using insertion sort
+    pos_list = [first_pos, mid_pos, last_pos]
+    insertion_sort(pos_list, comp=lambda x: int_list[x])
+    p = pos_list[1]
+
+    return p
+
+
+def insertion_sort(int_list, comp=None):
+    """
+    Insertion sort implementation. Modifies the input list in-place.
+    """
+    if not comp:
+        comp = lambda x: x
+
+    for i in range(1, len(int_list)):
+        x = int_list[i]
+        j = i
+        while j > 0 and comp(int_list[j - 1]) > comp(x):
+            int_list[j] = int_list[j - 1]
+            j = j - 1
+        int_list[j] = x
+
+
+def choose_pivot_random(int_list, sort_range):
+    """
+    Ramdom pivot choice
     """
     pos = random.randrange(*sort_range)
     return pos
@@ -84,17 +195,22 @@ def quick_sort(int_list, sort_range=None):
     if not sort_range:
         sort_range = (0, len(int_list))
 
-    if len(int_list[sort_range[0]:sort_range[1]]) < 2:
+    m = sort_range[1] - sort_range[0]
+
+    if m < 2:
         return
 
-    else:
-        piv_pos = choose_pivot(int_list, sort_range)
+    # exercise probe
+    global number_of_comparisons
+    number_of_comparisons += (m - 1)
 
-        new_pos = partition(int_list, sort_range, piv_pos)
-        # new_pos = partition_not_in_place(int_list, sort_range, piv_pos)
+    piv_pos = choose_pivot(int_list, sort_range)
 
-        quick_sort(int_list, sort_range=(sort_range[0], new_pos))
-        quick_sort(int_list, sort_range=(new_pos + 1, sort_range[1]))
+    new_pos = partition(int_list, sort_range, piv_pos)
+    # new_pos = partition_not_in_place(int_list, sort_range, piv_pos)
+
+    quick_sort(int_list, sort_range=(sort_range[0], new_pos))
+    quick_sort(int_list, sort_range=(new_pos + 1, sort_range[1]))
 
 
 def main(int_list):
@@ -103,12 +219,15 @@ def main(int_list):
     int_list.sort()
     res_ok = 'The sorted result is correct' if res == int_list else 'Wrong result'
 
-    print 'Sorted result: %s' % res
+    print 'Sorted result (truncated to 100): %s' % res[:100]
     print res_ok
+
+    print 'number of comparisons: %s' % number_of_comparisons
 
 
 def get_int_list_from_args():
-    parser = argparse.ArgumentParser(description='Count inversions in an integer array.')
+    parser = argparse.ArgumentParser(description=('Quick sort implementation. '
+                                                  'Reports the number of comparisons used.'))
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--integers', '-i', help='comma-separated list of integers')
