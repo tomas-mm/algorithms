@@ -135,6 +135,8 @@ def get_adjacency_lists(in_file):
 if __name__ == '__main__':
     args = parse_args()
     edges, verts = get_adjacency_lists(args.file)
-    minimun_cut_size, min_cut = min_cut(edges, verts)
+    minimun_cut_size, mcut = min_cut(edges, verts)
 
+    print "Min cut: %s" % mcut
     print "Min cut size: %s" % minimun_cut_size
+
