@@ -25,7 +25,7 @@ def min_cut_basic(edges, verts):
 
     while len(verts) > 2:
         edge = random.choice(edges.keys())
-        v1, v2 = edges.pop(edge)
+        v1, v2 = edges[edge]
 
         # merge vertices into a single label
         merged_v_label = '%s_%s' % (v1, v2)
@@ -33,22 +33,18 @@ def min_cut_basic(edges, verts):
         edges_v2 = verts.pop(v2)
         verts[merged_v_label] = edges_v1.union(edges_v2)
 
-        verts[merged_v_label].remove(edge)
+        # edge and self loops -> remove
+        edges_to_remove = edges_v1.intersection(edges_v2)
+        verts[merged_v_label].difference_update(edges_to_remove)
+        for e in edges_to_remove:
+            edges.pop(e)
 
         # replace old vertices names in the edges
-        for e in list(verts[merged_v_label]):  # 'list' makes a copy for iterating
-            va, vb = edges[e]
-            if va in (v1, v2):
-                va = merged_v_label
-            if vb in (v1, v2):
-                vb = merged_v_label
-
-            if va == vb:
-                # self loop -> remove
-                edges.pop(e)
-                verts[merged_v_label].remove(e)
+        for e in verts[merged_v_label]:
+            if edges[e][0] in (v1, v2):
+                edges[e][0] = merged_v_label
             else:
-                edges[e] = (va, vb)
+                edges[e][1] = merged_v_label
 
 
 def min_cut(edges, verts):
