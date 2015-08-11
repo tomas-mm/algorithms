@@ -84,7 +84,8 @@ def main():
             if not i % 100:
                 progress = float(i + 10000) / 20000 * 100
                 try:
-                    remaining_time = (time.time() - start_time) * 100 / progress
+                    estimated_time = (time.time() - start_time) * 100 / progress
+                    remaining_time = estimated_time * (100 - progress) / 100
                 except:
                     remaining_time = None
                 print 'Progress :  %s %%. Remaining time: %s' % (progress, remaining_time)
